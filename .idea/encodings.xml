@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding" addBOMForNewFiles="with NO BOM">
+    <file url="file://$PROJECT_DIR$" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../mapreduce" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/../mapreduce/src/main/java/com/frisk/mapreduce/WordCountDriver.java" charset="GBK" />
+    <file url="file://$PROJECT_DIR$/../mapreduce/src/main/java/com/frisk/mapreduce/WordCountReduce.java" charset="GB2312" />
+  </component>
+</project>

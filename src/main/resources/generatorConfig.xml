@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<!--
+<generatorConfiguration>
+    &lt;!&ndash;<classPathEntry location="/Program Files/IBM/SQLLIB/java/db2java.zip"/>&ndash;&gt;
+
+    <context id="DB2Tables" targetRuntime="MyBatis3">
+
+        <commentGenerator>
+            <property name="suppressDate" value="true"/>
+            <property name="suppressAllComments" value="true"/>
+        </commentGenerator>
+
+        <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"
+                        connectionURL="jdbc:mysql://localhost:3306/hrs?&amp;useSSL=false&amp;serverTimezone=GMT%2B8&amp;allowPublicKeyRetrieval=true&amp;tinyInt1isBit=false&amp;useOldAliasMetadataBehavior=true"
+                        userId="root"
+                        password="root">
+            <property name="nullCatalogMeansCurrent" value="true"/>
+        </jdbcConnection>
+
+
+
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
+        </javaTypeResolver>
+
+        <javaModelGenerator targetPackage="com.frisk.hrs.pojo" targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="false"/>
+            <property name="trimStrings" value="true"/>
+        </javaModelGenerator>
+
+        <sqlMapGenerator targetPackage="com.frisk.hrs.mapper" targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="false"/>
+        </sqlMapGenerator>
+
+        <javaClientGenerator type="XMLMAPPER" targetPackage="com.frisk.hrs.mapper" targetProject=".\src\main\java">
+            <property name="enableSubPackages" value="false"/>
+        </javaClientGenerator>
+
+        &lt;!&ndash;<table tableName="attendance"/>&ndash;&gt;
+        &lt;!&ndash;<table tableName="department"/>&ndash;&gt;
+        &lt;!&ndash;<table tableName="employee"/>&ndash;&gt;
+        &lt;!&ndash;<table tableName="employee_train"/>&ndash;&gt;
+        &lt;!&ndash;<table tableName="interview"/>&ndash;&gt;
+        &lt;!&ndash;<table tableName="objection_salary"/>&ndash;&gt;
+        &lt;!&ndash;<table tableName="offers"/>&ndash;&gt;
+        &lt;!&ndash;<table tableName="position"/>&ndash;&gt;
+        &lt;!&ndash;<table tableName="resume"/>&ndash;&gt;
+        &lt;!&ndash;<table tableName="rewards"/>&ndash;&gt;
+        &lt;!&ndash;<table tableName="salary"/>&ndash;&gt;
+        &lt;!&ndash;<table tableName="train"/>&ndash;&gt;
+        &lt;!&ndash;<table tableName="user"/>&ndash;&gt;
+
+    </context>
+</generatorConfiguration>-->

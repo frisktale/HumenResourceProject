@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.frisk.hrs.mapper.InterviewMapper">
+    <resultMap id="BaseResultMap" type="com.frisk.hrs.pojo.Interview">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="delivery_time" jdbcType="TIMESTAMP" property="deliveryTime"/>
+        <result column="interview_time" jdbcType="TIMESTAMP" property="interviewTime"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+        <result column="user_status" jdbcType="VARCHAR" property="userStatus"/>
+        <result column="is_read" jdbcType="TINYINT" property="isRead"/>
+    </resultMap>
+    <resultMap id="CustomResultMap" type="com.frisk.hrs.pojo.InterviewCustom">
+        <id column="id" jdbcType="INTEGER" property="interview.id"/>
+        <result column="delivery_time" jdbcType="TIMESTAMP" property="interview.deliveryTime"/>
+        <result column="interview_time" jdbcType="TIMESTAMP" property="interview.interviewTime"/>
+        <result column="status" jdbcType="VARCHAR" property="interview.status"/>
+        <result column="user_status" jdbcType="VARCHAR" property="interview.userStatus"/>
+        <result column="is_read" jdbcType="TINYINT" property="interview.isRead"/>
+        <association property="employee" javaType="Employee" column="employee_id"
+                     select="com.frisk.hrs.mapper.EmployeeMapper.findEmpByIdBase"/>
+        <association property="user" javaType="User" column="user_id"
+                     select="com.frisk.hrs.mapper.UserMapper.findUserByIdBase"/>
+        <association property="offers" javaType="Offers" column="offer_id"
+                     select="com.frisk.hrs.mapper.OffersMapper.findOffersByIdBase"/>
+        <association property="resume" javaType="resume" column="resume_id"
+                     select="com.frisk.hrs.mapper.ResumeMapper.findResumeByIdBase"/>
+    </resultMap>
+
+
+    <sql id="customerSelect">
+        <if test="status!=null">
+            and status like #{status}
+        </if>
+        <if test="userStatus!=null">
+            and user_status like #{userStatus}
+        </if>
+        <if test="userId!=null">
+            and user_id = #{userId}
+        </if>
+        <if test="offerId!=null">
+            and offer_id = #{offerId}
+        </if>
+        <if test="resumeId!=null">
+            and resume_id = #{resumeId}
+        </if>
+        <if test="employeeId!=null">
+            and employee_id = #{employeeId}
+        </if>
+        <if test="isRead!=null">
+            and is_read = #{isRead}
+        </if>
+        and is_delete = false
+    </sql>
+    <insert id="insertInterview">
+        insert into interview ( delivery_time,status,user_status,
+        interview_time, user_id, offer_id, resume_id,employee_id)
+        values (
+        #{interview.deliveryTime},#{interview.interviewTime},#{interview.status},#{interview.userStatus},
+        <choose>
+            <when test="user!=null">
+                #{user.id}
+            </when>
+            <otherwise>null</otherwise>
+        </choose>
+        ,
+        <choose>
+            <when test="offers!=null">
+                #{offers.id}
+            </when>
+            <otherwise>null</otherwise>
+        </choose>
+        ,
+        <choose>
+            <when test="resume!=null">
+                #{resume.id}
+            </when>
+            <otherwise>null</otherwise>
+        </choose>
+        ,
+        <choose>
+            <when test="employee!=null">
+                #{employee.id}
+            </when>
+            <otherwise>null</otherwise>
+        </choose>
+        )
+    </insert>
+    <update id="updateInterview">
+        update interview
+        <set>
+            <if test="interview.status!=null">
+                status = #{interview.status},
+            </if>
+            <if test="interview.isRead!=null">
+                is_read = #{interview.isRead},
+            </if>
+            <if test="interview.userStatus!=null">
+                user_status = #{interview.userStatus},
+            </if>
+
+            <if test="interview.deliveryTime!=null">
+                delivery_time = #{interview.deliveryTime},
+            </if>
+            <if test="interview.interviewTime!=null">
+                interview_time = #{interview.interviewTime},
+            </if>
+            <if test="user!=null and user.id!=null">
+                user_id = #{user.id},
+            </if>
+            <if test="offers!=null and offers.id!=null">
+                offer_id = #{offers.id},
+            </if>
+            <if test="resume!=null and resume.id!=null">
+                resume_id = #{resume.id},
+            </if>
+            <if test="employee!=null and employee.id!=null">
+                employee_id = #{employee.id},
+            </if>
+        </set>
+        where id = ${interview.id}
+    </update>
+    <update id="deleteList">
+        delete from interview  where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update><!--
+    <update id="deleteList">
+        update interview set is_delete = true where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>-->
+    <update id="recoverInterview">
+        update interview set is_delete = false where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <delete id="cleanInterview">
+        delete
+        from interview
+        where is_delete = true
+    </delete>
+
+    <select id="findInterviewByIdBase" resultMap="BaseResultMap">
+        select *
+        from interview
+        where id = #{id}
+          and is_delete = false
+    </select>
+    <select id="findInterviewById" resultMap="CustomResultMap">
+        select *
+        from interview
+        where id = #{id}
+          and is_delete = false
+    </select>
+    <select id="findInterviewByCustomer" resultMap="CustomResultMap">
+        select * from interview
+        <where>
+            <include refid="customerSelect"/>
+        </where>
+    </select>
+    <select id="showDelete" resultMap="CustomResultMap">
+        select *
+        from interview
+        where is_delete = true
+    </select>
+
+</mapper>

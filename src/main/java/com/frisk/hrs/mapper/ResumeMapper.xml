@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.frisk.hrs.mapper.ResumeMapper">
+    <resultMap id="BaseResultMap" type="com.frisk.hrs.pojo.Resume">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="sex" jdbcType="VARCHAR" property="sex"/>
+        <result column="age" jdbcType="INTEGER" property="age"/>
+        <result column="education" jdbcType="VARCHAR" property="education"/>
+        <result column="tel" jdbcType="VARCHAR" property="tel"/>
+        <result column="email" jdbcType="VARCHAR" property="email"/>
+        <result column="political_status" jdbcType="VARCHAR" property="politicalStatus"/>
+        <result column="last_job" jdbcType="VARCHAR" property="lastJob"/>
+        <result column="exp" jdbcType="VARCHAR" property="exp"/>
+        <result column="expected_salary_low" jdbcType="DOUBLE" property="expectedSalaryLow"/>
+        <result column="expected_salary_high" jdbcType="DOUBLE" property="expectedSalaryHigh"/>
+        <result column="hobby" jdbcType="VARCHAR" property="hobby"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+    </resultMap>
+    <insert id="insertResume"  useGeneratedKeys="true" keyProperty="id">
+        insert into resume (name, sex, age, education, tel, email, political_status, last_job, exp, expected_salary_low, expected_salary_high, hobby,user_id) values (
+          #{name}, #{sex}, #{age}, #{education}, #{tel}, #{email}, #{politicalStatus}, #{lastJob}, #{exp}, #{expectedSalaryLow}, #{expectedSalaryHigh}, #{hobby} ,#{userId}
+        );
+    </insert>
+    <update id="updateResume">
+        update resume
+         <set>
+            <if test="name!=null">
+                name = #{name},
+            </if>
+            <if test="sex!=null">
+                sex = #{sex},
+            </if>
+            <if test="age!=null">
+                age = #{age},
+            </if>
+            <if test="education!=null">
+                education = #{education},
+            </if>
+            <if test="tel!=null">
+                tel = #{tel},
+            </if>
+            <if test="email!=null">
+                email = #{email},
+            </if>
+            <if test="politicalStatus!=null">
+                political_status = #{politicalStatus},
+            </if>
+            <if test="lastJob!=null">
+                last_job = #{lastJob},
+            </if>
+            <if test="exp!=null">
+                exp = #{exp},
+            </if>
+            <if test="expectedSalaryLow!=null">
+                expected_salary_low = #{expectedSalaryLow},
+            </if>
+            <if test="expectedSalaryHigh!=null">
+                expected_salary_high = #{expectedSalaryHigh},
+            </if>
+            <if test="hobby!=null">
+                hobby = #{hobby},
+            </if>
+            <if test="userId!=null">
+                user_id = #{userId},
+            </if>
+         </set>
+         where id = #{id};
+    </update>
+    <update id="recoverResume">
+        update resume set is_delete = false where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <delete id="deleteList">
+        delete from resume  where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+    <!--<update id="deleteList">
+        update resume set is_delete = true where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>-->
+    <delete id="cleanResume">
+        delete from resume where is_delete = true
+    </delete>
+    <select id="findResumeByIdBase" resultMap="BaseResultMap">
+      select * from resume where id = #{id} and is_delete = false
+    </select>
+    <select id="showDelete" resultMap="BaseResultMap">
+        select * from resume where is_delete = true
+    </select>
+    <select id="findResumeByUserIdBase" resultMap="BaseResultMap">
+        select * from resume where user_id = #{id};
+    </select>
+
+
+</mapper>

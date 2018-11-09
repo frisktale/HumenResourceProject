@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.frisk.hrs.mapper.ObjectionSalaryMapper">
+    <resultMap id="BaseResultMap" type="com.frisk.hrs.pojo.ObjectionSalary">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="content" jdbcType="VARCHAR" property="content"/>
+        <result column="money" jdbcType="DOUBLE" property="money"/>
+        <result column="reissue_time" jdbcType="TIMESTAMP" property="reissueTime"/>
+        <result column="is_execute" jdbcType="TINYINT" property="isExecute"/>
+    </resultMap>
+
+    <resultMap id="CustomResultMap" type="com.frisk.hrs.pojo.ObjectionSalaryCustom">
+        <id column="id" jdbcType="INTEGER" property="objectionSalary.id"/>
+        <result column="content" jdbcType="VARCHAR" property="objectionSalary.content"/>
+        <result column="money" jdbcType="DOUBLE" property="objectionSalary.money"/>
+        <result column="reissue_time" jdbcType="TIMESTAMP" property="objectionSalary.reissueTime"/>
+        <result column="is_execute" jdbcType="TINYINT" property="objectionSalary.isExecute"/>
+        <association property="salary" javaType="salary" column="salary_id"
+                     select="com.frisk.hrs.mapper.SalaryMapper.findSalaryByIdBase"/>
+    </resultMap>
+
+    <insert id="insertObjectionSalary">
+        insert into objection_salary (content, money, reissue_time, is_execute, salary_id)
+        values (#{objectionSalary.content}, #{objectionSalary.money}, #{objectionSalary.reissueTime},
+                #{objectionSalary.isExecute}, #{salary.id});
+    </insert>
+    <update id="updateObjectionSalary">
+        update objection_salary
+        <set>
+            <if test="objectionSalary!=null">
+                <if test="objectionSalary.content!=null">
+                    content = #{objectionSalary.content},
+                </if>
+                <if test="objectionSalary.money!=null">
+                    money = #{objectionSalary.money},
+                </if>
+                <if test="objectionSalary.reissueTime!=null">
+                    reissue_time = #{objectionSalary.reissueTime},
+                </if>
+                <if test="objectionSalary.isExecute!=null">
+                    is_execute = #{objectionSalary.isExecute},
+                </if>
+            </if>
+            <if test="salary!=null and salary.id!=null">
+                salary_id=#{salary.id},
+            </if>
+        </set>
+        where id = #{objectionSalary.id}
+    </update>
+    <update id="recoverObjectionSalary">
+        update objection_salary set is_delete = false where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <delete id="deleteList">
+        delete from objection_salary  where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+    <!--<update id="deleteList">
+        update objection_salary set is_delete = true where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>-->
+    <delete id="cleanObjectionSalary">
+        delete
+        from objection_salary
+        where is_delete=true
+    </delete>
+
+    <select id="findObjectionSalaryByIdBase" resultMap="BaseResultMap">
+        select *
+        from objection_salary
+        where id = #{id}
+          and is_delete = false;
+    </select>
+    <select id="findObjectionSalaryById" resultMap="CustomResultMap">
+        select *
+        from objection_salary
+        where id = #{id}
+          and is_delete = false;
+    </select>
+    <select id="findObjectionSalaryBySalaryId" resultMap="CustomResultMap">
+        select *
+        from objection_salary
+        where salary_id = #{id}
+          and is_delete = false;
+    </select>
+    <select id="findObjectionSalaryBySalaryIdBase" resultMap="BaseResultMap">
+        select *
+        from objection_salary
+        where salary_id = #{id}
+          and is_delete = false;
+    </select>
+    <select id="showDelete" resultMap="CustomResultMap">
+        select *
+        from objection_salary
+        where is_delete = true;
+    </select>
+    <select id="getUnProcessObjectionSalary" resultMap="CustomResultMap">
+        select *
+        from objection_salary
+        where salary_id in
+            (select salary.id
+             from salary
+             where is_disagree = true and is_process = false);
+    </select>
+
+
+</mapper>

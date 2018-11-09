@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.frisk.hrs.mapper.TrainMapper">
+    <resultMap id="BaseResultMap" type="com.frisk.hrs.pojo.Train">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="content" jdbcType="VARCHAR" property="content"/>
+        <result column="time" jdbcType="TIMESTAMP" property="time"/>
+    </resultMap>
+
+    <resultMap id="CustomResultMap" type="com.frisk.hrs.pojo.TrainCustom">
+        <id column="id" property="train.id"/>
+        <result column="content" property="train.content"/>
+        <result column="time" property="train.time"/>
+        <association property="department" javaType="department"
+                     select="com.frisk.hrs.mapper.DepartmentMapper.findDepartmentByIdBase" column="department_id"/>
+        <association property="position" javaType="position"
+                     select="com.frisk.hrs.mapper.PositionMapper.findPositionByIdBase" column="position_id"/>
+        <collection property="employees" ofType="employee" select="com.frisk.hrs.mapper.EmployeeMapper.findEmpByTrainId"
+                    column="id"/>
+    </resultMap>
+
+
+    <sql id="CustomerSelect">
+        <if test="content!=null">
+            and content like #{content}
+        </if>
+        <if test="departmentId!=null">
+            and department_id = #{departmentId}
+        </if>
+        <if test="positionId!=null">
+            and position_id=#{positionId}
+        </if>
+        and is_delete = false
+    </sql>
+    <!--
+
+    <sql id="CustomerSelect">
+        <if test="content!=null">
+            and t.content like #{content}
+        </if>
+        <if test="departmentId!=null">
+            and t.department_id like #{departmentId}
+        </if>
+        <if test="positionId!=null">
+            and t.position_id=#{positionId}
+        </if>
+        and e.is_delete = false
+        and t.is_delete = false
+    </sql>-->
+    <insert id="insertTrain">
+        insert into train (content, time, department_id, position_id) values (
+        #{train.content},#{train.time}
+        <choose>
+            <when test="department!=null">
+                ,#{department.id}
+            </when>
+            <otherwise>,null</otherwise>
+        </choose>
+        <choose>
+            <when test="position!=null">
+                ,#{position.id}
+            </when>
+            <otherwise>,null</otherwise>
+        </choose>
+        );
+    </insert>
+    <update id="updateTrain">
+        update train
+        <set>
+            <if test="train!=null">
+                <if test="train.content!=null">
+                    content = #{train.content},
+                </if>
+                <if test="train.time!=null">
+                    time = #{train.time},
+                </if>
+            </if>
+            <if test="_parameter.department!=null and _parameter.department.id!=null">
+                department_id=#{department.id},
+            </if>
+            <if test="_parameter.position!=null and _parameter.position.id!=null">
+                position_id=#{position.id},
+            </if>
+        </set>
+        where id = #{train.id}
+    </update>
+    <delete id="deleteList">
+        delete from train  where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete><!--
+    <update id="deleteList">
+        update train set is_delete = true where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>-->
+    <update id="recoverTrain">
+        update train set is_delete = false where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <delete id="cleanTrain">
+        delete
+        from train
+        where is_delete = true
+    </delete>
+
+
+    <select id="findTrainById" resultMap="CustomResultMap">
+        select *
+        from train
+        where id = #{id}
+          and is_delete = false
+    </select>
+    <select id="findTrainByCustomer" resultMap="CustomResultMap">
+        select * from train
+        <where>
+            <include refid="CustomerSelect"/>
+        </where>
+    </select>
+    <select id="findNotHappenedTrainByCustomer" resultMap="CustomResultMap">
+        select * from train
+        <where>
+            <include refid="CustomerSelect"/>
+            and time > NOW();
+        </where>
+    </select>
+    <select id="findTrainByIdBase" resultMap="BaseResultMap">
+        select *
+        from train
+        where id = #{id};
+    </select>
+    <select id="showDelete" resultMap="CustomResultMap">
+        select *
+        from train
+        where is_delete = true
+    </select>
+    <select id="findTrainByEmpId" resultMap="BaseResultMap">
+        select *
+        from train
+        where id in (select (id) from employee_train where employee_id = #{id});
+    </select>
+    <select id="findNotHappenedTrainByEmpId" resultMap="CustomResultMap">
+        select *
+        from train
+        where id in (select (id) from employee_train where employee_id = #{id})
+          and time > NOW();
+    </select>
+    <select id="findNotHappenedTrainByEmpIdBase" resultMap="BaseResultMap">
+        select *
+        from train
+        where id in (select (id) from employee_train where employee_id = #{id})
+          and time > NOW();
+    </select>
+
+</mapper>

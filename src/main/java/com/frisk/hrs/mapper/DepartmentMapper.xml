@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.frisk.hrs.mapper.DepartmentMapper">
+    <resultMap id="BaseResultMap" type="com.frisk.hrs.pojo.Department">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+    </resultMap>
+
+
+    <resultMap id="CustomerResultMap" type="com.frisk.hrs.pojo.DepartmentCustom">
+        <id column="id" jdbcType="INTEGER" property="department.id"/>
+        <result column="name" jdbcType="VARCHAR" property="department.name"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="department.createTime"/>
+        <association property="leader" javaType="Employee" column="leader_id"
+                     select="com.frisk.hrs.mapper.EmployeeMapper.findEmpByIdBase"/>
+        <collection property="employees" ofType="list"
+                    select="com.frisk.hrs.mapper.EmployeeMapper.findEmpByDepartmentId" column="id"/>
+        <collection property="positions" ofType="list"
+                    select="com.frisk.hrs.mapper.PositionMapper.findPositionByDepartmentBase" column="id"/>
+    </resultMap>
+
+
+    <sql id="CustomerSelect">
+        <if test="name!=null">
+            and name like #{name}
+        </if>
+        <if test="employee!=null and employee.id!=null">
+            and leader_id=#{employee.id}
+        </if>
+        and is_delete = false
+    </sql>
+    <insert id="insertDepartment" parameterType="departmentCustom">
+        insert into department (name, create_time, leader_id)
+        values (
+                #{department.name}, #{department.createTime}, #{leader.id}
+                   );
+    </insert>
+    <update id="updateDepartment">
+        update department
+        <set>
+            <if test="department!=null">
+                <if test="department.name!=null">
+                    name = #{department.name},
+                </if>
+                <if test="department.createTime!=null">
+                    create_time = #{department.createTime},
+                </if>
+            </if>
+            <if test="_parameter.leader!=null and _parameter.leader.id!=null">
+                leader_id=#{leader.id}
+            </if>
+        </set>
+        where id = #{department.id};
+    </update>
+    <delete id="deleteList">
+        delete from department  where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete><!--
+    <update id="deleteList">
+        update department set is_delete = true where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>-->
+    <update id="recoverDepartment">
+        update department set is_delete = false where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <delete id="cleanDepartment">
+        delete
+        from department
+        where is_delete=true
+    </delete>
+    <select id="findDepartmentById" resultMap="CustomerResultMap">
+        select *
+        from department
+        where id = #{id}
+          and is_delete = false
+    </select>
+    <select id="findDepartmentByCustomer" parameterType="departmentFind" resultMap="CustomerResultMap">
+        select * from department
+        <where>
+            <include refid="CustomerSelect"/>
+        </where>
+    </select>
+    <select id="findDepartmentByIdBase" resultMap="BaseResultMap">
+        select *
+        from department
+        where id = #{id}
+    </select>
+    <select id="showDelete" resultMap="CustomerResultMap">
+        select *
+        from department
+        where is_delete = true;
+    </select>
+
+
+</mapper>

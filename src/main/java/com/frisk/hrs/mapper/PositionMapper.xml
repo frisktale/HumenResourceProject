@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.frisk.hrs.mapper.PositionMapper">
+    <resultMap id="BaseResultMap" type="com.frisk.hrs.pojo.Position">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+    </resultMap>
+
+    <resultMap id="CustomerResultMap" type="com.frisk.hrs.pojo.PositionCustom">
+        <id column="id" jdbcType="INTEGER" property="position.id"/>
+        <result column="name" jdbcType="VARCHAR" property="position.name"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="position.createTime"/>
+        <association property="department" javaType="department"
+                     select="com.frisk.hrs.mapper.DepartmentMapper.findDepartmentByIdBase" column="department_id"/>
+    </resultMap>
+
+    <sql id="CustomerSelect">
+        <if test="name!=null">
+            and name like #{name}
+        </if>
+        <if test="departmentId!=null">
+            and department_id=#{departmentId}
+        </if>
+        and is_delete = false
+    </sql>
+    <insert id="insertPosition">
+        insert into position (name, create_time, department_id) values (
+        #{position.name},#{position.createTime}
+        <choose>
+            <when test="department!=null">
+                ,#{department.id}
+            </when>
+            <otherwise>
+                ,null
+            </otherwise>
+        </choose>
+        )
+    </insert>
+    <update id="updatePosition">
+        update position
+        <set>
+            <if test="position.name!=null">
+                name = #{position.name},
+            </if>
+            <if test="position.createTime!=null">
+                create_time = #{position.createTime},
+            </if>
+            <if test="_parameter.department!=null and _parameter.department.id!=null">
+                department_id=#{department.id},
+            </if>
+        </set>
+        where id = #{position.id};
+    </update>
+    <update id="recoverPosition">
+        update position set is_delete = false where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <delete id="deleteList">
+        delete from position  where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+    <!--<update id="deleteList">
+        update position set is_delete = true where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>-->
+    <delete id="cleanPosition">
+        delete from position where is_delete=true
+    </delete>
+
+
+    <select id="findPositionByDepartmentBase" resultMap="BaseResultMap">
+        select * from position where department_id = #{id} and is_delete = false
+    </select>
+    <select id="findPositionByIdBase" resultMap="BaseResultMap">
+        select * from position where id = #{id} and is_delete = false
+    </select>
+
+    <select id="findPositionById" resultMap="CustomerResultMap">
+        select * from position where id = #{id} and is_delete = false
+    </select>
+    <select id="findPositionByCustomer" resultMap="CustomerResultMap">
+        select * from position
+        <where>
+            <include refid="CustomerSelect"/>
+        </where>
+    </select>
+    <select id="showDelete" resultMap="CustomerResultMap">
+        select * from position where is_delete = true ;
+    </select>
+
+</mapper>

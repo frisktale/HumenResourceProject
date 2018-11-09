@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.frisk.hrs.mapper.EmployeeMapper">
+    <resultMap id="BaseResultMap" type="com.frisk.hrs.pojo.Employee">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+        <result column="salary" jdbcType="VARCHAR" property="salary"/>
+    </resultMap>
+
+
+    <resultMap id="CustomResultMap" type="com.frisk.hrs.pojo.EmployeeCustom">
+        <id column="id" jdbcType="INTEGER" property="employee.id"/>
+        <result column="name" jdbcType="VARCHAR" property="employee.name"/>
+        <result column="status" jdbcType="VARCHAR" property="employee.status"/>
+        <result column="salary" jdbcType="VARCHAR" property="employee.salary"/>
+        <association property="department" javaType="department"
+                     select="com.frisk.hrs.mapper.DepartmentMapper.findDepartmentByIdBase" column="department_id"/>
+        <association property="position" javaType="position"
+                     select="com.frisk.hrs.mapper.PositionMapper.findPositionByIdBase" column="position_id"/>
+        <association property="user" javaType="User" column="id"
+                     select="com.frisk.hrs.mapper.UserMapper.findUserByEmpIdBase"/>
+        <collection property="train" ofType="train" select="com.frisk.hrs.mapper.TrainMapper.findTrainByEmpId"
+                    column="id"/>
+    </resultMap>
+
+
+    <sql id="CustomerSelect">
+        <if test="name!=null">
+            and name like #{name}
+        </if>
+        <if test="status!=null">
+            and status like #{status}
+        </if>
+        <if test="departmentId!=null">
+            and department_id=#{departmentId}
+        </if>
+        <if test="positionId!=null">
+            and position_id=#{positionId}
+        </if>
+        and is_delete = false
+    </sql>
+    <insert id="insertEmployee" useGeneratedKeys="true" keyProperty="employee.id">
+        insert into employee (name, status, department_id, position_id,salary)
+        values (
+                #{employee.name}, #{employee.status}, #{department.id}, #{position.id},#{employee.salary}
+                   )
+    </insert>
+    <update id="updateEmployee">
+        update employee
+        <set>
+            <if test="employee.name!=null">
+                name = #{employee.name},
+            </if>
+            <if test="employee.status!=null">
+                status = #{employee.status},
+            </if>
+            <if test="employee.salary!=null">
+                salary = #{employee.salary},
+            </if>
+            <if test="_parameter.department!=null and _parameter.department.id!=null">
+                department_id=#{department.id},
+            </if>
+            <if test="_parameter.position!=null and _parameter.position.id!=null">
+                position_id=#{position.id},
+            </if>
+        </set>
+        where id = #{employee.id};
+    </update>
+    <update id="deleteList">
+        update employee set is_delete = true where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <update id="recoverEmployee">
+        update employee set is_delete = false where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <delete id="cleanEmployee">
+        delete
+        from employee
+        where is_delete=true
+    </delete>
+
+    <select id="findEmpByIdBase" resultMap="BaseResultMap">
+        select *
+        from employee
+        where id = #{id}
+          and is_delete = false
+    </select>
+    <select id="findEmpByPositionId" resultMap="BaseResultMap">
+        select *
+        from employee
+        where position_id = #{id}
+          and is_delete = false
+    </select>
+    <select id="findEmpByDepartmentId" resultMap="BaseResultMap">
+        select *
+        from employee
+        where department_id = #{id}
+          and is_delete = false
+    </select>
+    <select id="findEMpById" resultMap="CustomResultMap">
+        select *
+        from employee
+        where id = #{id}
+          and is_delete = false
+    </select>
+    <select id="findEmployeeByCustomer" resultMap="CustomResultMap">
+        select * from employee
+        <where>
+            <include refid="CustomerSelect"/>
+        </where>
+    </select>
+    <select id="showDelete" resultMap="CustomResultMap">
+        select *
+        from employee
+        where is_delete = true;
+    </select>
+    <select id="findEmpByTrainId" resultMap="BaseResultMap">
+        select *
+        from train
+        where id in(select (id) from employee_train where train_id = #{id});
+    </select>
+    <select id="findEmpBySalaryId" resultMap="CustomResultMap">
+        select *
+        from employee where id = (select employee_id from salary where id = #{id});
+    </select>
+
+
+</mapper>

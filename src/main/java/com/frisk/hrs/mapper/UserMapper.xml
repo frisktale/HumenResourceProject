@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.frisk.hrs.mapper.UserMapper">
+    <resultMap id="BaseResultMap" type="user">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="username" jdbcType="VARCHAR" property="username"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+    </resultMap>
+
+
+    <resultMap id="CustomerResultMap" type="userCustom">
+        <id column="id" jdbcType="INTEGER" property="user.id"/>
+        <result column="username" jdbcType="VARCHAR" property="user.username"/>
+        <result column="password" jdbcType="VARCHAR" property="user.password"/>
+        <result column="type" jdbcType="INTEGER" property="user.type"/>
+        <association property="employee" javaType="Employee" column="employee_id"
+                     select="com.frisk.hrs.mapper.EmployeeMapper.findEmpByIdBase"/>
+        <association property="resume" javaType="Resume" column="id"
+                     select="com.frisk.hrs.mapper.ResumeMapper.findResumeByUserIdBase"/>
+    </resultMap>
+
+    <sql id="customerSelect">
+        <if test="username!=null">
+            and username like #{username}
+        </if>
+        <if test="password!=null">
+            and password like #{password}
+        </if>
+        <if test="type!=null">
+            and type = #{type}
+        </if>
+        <if test="resumeId!=null">
+            and resume_id = #{resumeId}
+        </if>
+        <if test="employee!=null and employee.id!=null">
+            and employee_id=#{employee.id}
+        </if>
+        and is_delete = false
+    </sql>
+    <insert id="insertUser" parameterType="userCustom">
+        insert into user (username, password, type, employee_id)
+        values (
+                #{user.username}, #{user.password}, #{user.type}, #{employee.id}
+                   )
+    </insert>
+    <update id="updateUserNotSetNull" parameterType="userCustom">
+        update user
+        <set>
+            <if test="user!=null">
+                <if test="user.username!=null">
+                    username = #{user.username},
+                </if>
+                <if test="user.password!=null">
+                    password = #{user.password},
+                </if>
+                <if test="user.type!=null">
+                    type = #{user.type},
+                </if>
+            </if>
+            <if test="_parameter.employee!=null and _parameter.employee.id!=null">
+                employee_id=#{employee.id},
+            </if>
+            <if test="_parameter.resume!=null and _parameter.resume.id!=null">
+                resume=#{resume.id},
+            </if>
+        </set>
+        where id=#{user.id};
+    </update>
+    <update id="deleteList">
+        delete from user  where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update><!--
+    <update id="deleteList">
+        update user set is_delete = true where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>-->
+    <update id="recoverUser">
+        update user set is_delete = false where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <delete id="cleanUser">
+        delete
+        from user
+        where is_delete = true
+    </delete>
+
+    <select id="findUserById" resultMap="CustomerResultMap">
+        select *
+        from user
+        where id = #{id}
+    </select>
+
+    <select id="findUserByIdBase" resultMap="BaseResultMap">
+        select *
+        from user
+        where id = #{id}
+    </select>
+
+    <select id="findUserByUserCustomer" parameterType="userFind" resultMap="CustomerResultMap">
+        select * from user
+        <where>
+            <include refid="customerSelect"/>
+        </where>
+    </select>
+    <select id="showDelete" resultMap="CustomerResultMap">
+        select *
+        from user
+        where is_delete = true;
+    </select>
+    <select id="findUserByEmpIdBase" resultMap="BaseResultMap">
+        select *
+        from user
+        where employee_id = #{id}
+    </select>
+</mapper>

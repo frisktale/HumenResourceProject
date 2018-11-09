@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.frisk.hrs.mapper.SalaryMapper">
+    <resultMap id="BaseResultMap" type="com.frisk.hrs.pojo.Salary">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="employee_id" jdbcType="INTEGER" property="employeeId"/>
+        <result column="time" jdbcType="DATE" property="time"/>
+        <result column="basic" jdbcType="DOUBLE" property="basic"/>
+        <result column="performance" jdbcType="DOUBLE" property="performance"/>
+        <result column="overtime" jdbcType="DOUBLE" property="overtime"/>
+        <result column="rewards" jdbcType="DOUBLE" property="rewards"/>
+        <result column="is_disagree" jdbcType="TINYINT" property="isDisagree"/>
+        <result column="is_process" jdbcType="TINYINT" property="isProcess"/>
+    </resultMap>
+    <resultMap id="CustomResultMap" type="com.frisk.hrs.pojo.SalaryCustom">
+        <id column="id" jdbcType="INTEGER" property="salary.id"/>
+        <result column="employee_id" jdbcType="INTEGER" property="salary.employeeId"/>
+        <result column="time" jdbcType="DATE" property="salary.time"/>
+        <result column="basic" jdbcType="DOUBLE" property="salary.basic"/>
+        <result column="performance" jdbcType="DOUBLE" property="salary.performance"/>
+        <result column="overtime" jdbcType="DOUBLE" property="salary.overtime"/>
+        <result column="rewards" jdbcType="DOUBLE" property="salary.rewards"/>
+        <result column="is_disagree" jdbcType="TINYINT" property="salary.isDisagree"/>
+        <result column="is_process" jdbcType="TINYINT" property="salary.isProcess"/>
+        <association property="objectionSalary" javaType="objectionSalary"
+                    select="com.frisk.hrs.mapper.ObjectionSalaryMapper.findObjectionSalaryBySalaryIdBase" column="id"/>
+    </resultMap>
+
+    <sql id="CustomSelect">
+        <if test="employeeId!=null">
+            and employee_id = #{employeeId}
+        </if>
+        <if test="isDisagree!=null">
+            and is_disagree = #{isDisagree}
+        </if>
+        <if test="isProcess!=null">
+            and is_process like #{isProcess}
+        </if>
+        <if test="timeYear!=null">
+            and DATE_FORMAT(time,'%Y') = #{timeYear}
+        </if>
+        <if test="timeYearMonth!=null">
+            and DATE_FORMAT(time,'%Y%m') = #{timeYearMonth}
+        </if>
+        and is_delete=false
+    </sql>
+    <insert id="insertSalary"  useGeneratedKeys="true" keyProperty="id" parameterType="salary">
+        insert into salary (employee_id, time, basic, performance, overtime, rewards, is_disagree, is_process)
+        values (#{employeeId}, #{time}, #{basic}, #{performance}, #{overtime}, #{rewards}, #{isDisagree}, #{isProcess});
+    </insert>
+    <update id="updateSalary">
+        update salary
+        <set>
+            <if test="employeeId!=null">
+                employee_id = #{employeeId} ,
+            </if>
+            <if test="time!=null">
+                time = #{time},
+            </if>
+            <if test="basic!=null">
+                basic = #{basic},
+            </if>
+            <if test="performance!=null">
+                performance = #{performance},
+            </if>
+            <if test="overtime!=null">
+                overtime = #{overtime},
+            </if>
+            <if test="rewards!=null">
+                rewards = #{rewards},
+            </if>
+            <if test="isDisagree!=null">
+                is_disagree = #{isDisagree},
+            </if>
+            <if test="isProcess!=null">
+                is_process = #{isProcess},
+            </if>
+        </set>
+        <where>
+            id = ${id}
+        </where>
+    </update>
+    <delete id="deleteList">
+        delete from salary  where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete><!--
+    <update id="deleteList">
+        update salary set is_delete = true where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>-->
+    <update id="recoverSalary">
+        update salary set is_delete = false where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <delete id="cleanSalary">
+        delete
+        from salary
+        where is_delete=true
+    </delete>
+
+    <select id="findSalaryByIdBase" resultMap="BaseResultMap">
+        select *
+        from salary
+        where id = #{id}
+          and is_delete = false
+    </select>
+    <select id="findSalaryById" resultMap="CustomResultMap">
+        select *
+        from salary
+        where id = #{id}
+          and is_delete = false
+    </select>
+    <select id="findSalaryByCustom" resultMap="BaseResultMap">
+        select *
+        from salary
+        <where>
+            <include refid="CustomSelect"/>
+        </where>
+    </select>
+    <select id="showDelete" resultMap="BaseResultMap">
+        select *
+        from salary
+        where is_delete = true;
+    </select>
+    <select id="findSalaryCustomByCustom" resultMap="CustomResultMap">
+        select *
+        from salary
+        <where>
+            <include refid="CustomSelect"/>
+        </where>
+    </select>
+
+
+</mapper>

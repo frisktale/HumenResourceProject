@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.frisk.hrs.mapper.OffersMapper">
+    <resultMap id="BaseResultMap" type="com.frisk.hrs.pojo.Offers">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="message" jdbcType="VARCHAR" property="message"/>
+        <result column="number" jdbcType="BIGINT" property="number"/>
+        <result column="effective_time" jdbcType="TIMESTAMP" property="effectiveTime"/>
+    </resultMap>
+    <resultMap id="CustomResultMap" type="com.frisk.hrs.pojo.OffersCustom">
+        <id column="id" jdbcType="INTEGER" property="offers.id"/>
+        <result column="message" jdbcType="VARCHAR" property="offers.message"/>
+        <result column="number" jdbcType="BIGINT" property="offers.number"/>
+        <result column="effective_time" jdbcType="TIMESTAMP" property="offers.effectiveTime"/>
+        <association property="department" javaType="department"
+                     select="com.frisk.hrs.mapper.DepartmentMapper.findDepartmentByIdBase" column="department_id"/>
+        <association property="position" javaType="position"
+                     select="com.frisk.hrs.mapper.PositionMapper.findPositionByIdBase" column="position_id"/>
+    </resultMap>
+
+    <sql id="CustomSelect">
+        <if test="message!=null">
+            and message like #{message}
+   []     </if>
+        <if test="number!=null">
+            and number like #{number}
+        </if>
+        <if test="departmentId!=null">
+            and department_id=#{departmentId}
+        </if>
+        <if test="positionId!=null">
+            and position_id=#{positionId}
+        </if>
+        and is_delete = false
+    </sql>
+    <insert id="insertOffers">
+        insert into offers ( message, number, effective_time,department_id, position_id) values (
+        #{offers.message},#{offers.number},#{offers.effectiveTime}
+        <choose>
+            <when test="department!=null">
+                ,#{department.id}
+            </when>
+            <otherwise>,null</otherwise>
+        </choose>
+        <choose>
+            <when test="position!=null">
+                ,#{position.id}
+            </when>
+            <otherwise>,null</otherwise>
+        </choose>
+        );
+    </insert>
+    <update id="updateOffers">
+        update offers
+        <set>
+            <if test="offers.message!=null">
+                message = #{offers.message},
+            </if>
+            <if test="offers.number!=null">
+                number = #{offers.number},
+            </if>
+            <if test="offers.effectiveTime!=null">
+                effective_time = #{offers.effectiveTime},
+            </if>
+            <if test="_parameter.department!=null and _parameter.department.id!=null">
+                department_id=#{department.id},
+            </if>
+            <if test="_parameter.position!=null and _parameter.position.id!=null">
+                position_id=#{position.id},
+            </if>
+        </set>
+        where id = #{offers.id}
+    </update>
+    <delete id="deleteList">
+        delete from offers  where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+    <!--<update id="deleteList">
+        update offers set is_delete = true where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>-->
+    <update id="recoverOffers">
+        update offers set is_delete = false where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <delete id="cleanOffers">
+        delete from offers where is_delete=true
+    </delete>
+
+    <select id="findOffersById" resultMap="CustomResultMap">
+        select * from offers where id = #{id} and is_delete = false
+    </select>
+    <select id="findOffersByCustomer" resultMap="CustomResultMap">
+        select * from offers
+        <where>
+            <include refid="CustomSelect"/>
+        </where>
+    </select>
+    <select id="findOffersByIdBase" resultMap="BaseResultMap">
+        select * from offers where id = #{id} and is_delete = false
+    </select>
+    <select id="showDelete" resultMap="CustomResultMap">
+        select * from offers where is_delete = true ;
+    </select>
+
+
+</mapper>

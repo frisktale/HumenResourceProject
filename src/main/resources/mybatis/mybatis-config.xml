@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+
+    <settings>
+        <setting name="logImpl" value="LOG4J"/>
+        <!--<setting name="lazyLoadingEnabled" value="true"/>
+        <setting name="aggressiveLazyLoading" value="false"/>-->
+    </settings>
+
+    <!--设置别名-->
+
+    <typeAliases>
+        <!--配置单个别名-->
+        <!--<typeAlias type="com.itheima.daoas="customer"/>-->
+        <!--配置扫描包形式,别名就是类名首字母小写-->
+        <package name="com.frisk.hrs.pojo"/>
+    </typeAliases>
+
+    <!--
+    plugins在配置文件中的位置必须符合要求，否则会报错，顺序如下:
+    properties?, settings?,
+    typeAliases?, typeHandlers?,
+    objectFactory?,objectWrapperFactory?,
+    plugins?,
+    environments?, databaseIdProvider?, mappers?
+-->
+    <plugins>
+        <!-- com.github.pagehelper为PageHelper类所在包名 -->
+        <plugin interceptor="com.github.pagehelper.PageInterceptor">
+            <!-- 使用下面的方式配置参数，后面会有所有的参数介绍 -->
+            <property name="reasonable" value="true"/>
+        </plugin>
+    </plugins>
+
+    <!--配置Mapper位置-->
+    <mappers>
+        <!--可以配置多个Mapper-->
+        <!--<mapper resource="com/frisk/spring/dao/UserDao.xml"/>-->
+        <!--<mapper resource="com/itheima/mapper/UserDao.xml"/>-->
+    </mappers>
+
+
+
+</configuration>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

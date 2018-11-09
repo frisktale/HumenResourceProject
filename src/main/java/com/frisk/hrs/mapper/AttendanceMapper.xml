@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.frisk.hrs.mapper.AttendanceMapper">
+    <resultMap id="BaseResultMap" type="com.frisk.hrs.pojo.Attendance">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="start_work_time" jdbcType="TIMESTAMP" property="startWorkTime"/>
+        <result column="off_work_time" jdbcType="TIMESTAMP" property="offWorkTime"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
+        <result column="employee_id" jdbcType="INTEGER" property="employeeId"/>
+        <result column="is_late" jdbcType="TINYINT" property="isLate"/>
+        <result column="is_absent" jdbcType="TINYINT" property="isAbsent"/>
+    </resultMap>
+
+
+    <sql id="CustomSelect">
+        <if test="startWorkTime!=null">
+            and start_work_time = #{startWorkTime}
+        </if>
+        <if test="startTimeInYearMonth!=null">
+            and DATE_FORMAT(start_work_time,'%Y%m') = #{startTimeInYearMonth}
+        </if>
+        <if test="startTimeInYearMonthDay!=null">
+            and DATE_FORMAT(start_work_time,'%Y%m%d') = #{startTimeInYearMonthDay}
+        </if>
+        <if test="offTimeInYearMonth!=null">
+            and DATE_FORMAT(off_work_time,'%Y%m%d') = #{offTimeInYearMonth}
+        </if>
+        <if test="offWorkTime!=null">
+            and off_work_time = #{offWorkTime}
+        </if>
+        <if test="status!=null">
+            and status = #{status}
+        </if>
+        <if test="employeeId!=null">
+            and employee_id = #{employeeId}
+        </if>
+        <if test="isLate!=null">
+            and is_late = #{isLate}
+        </if>
+        <if test="isAbsent!=null">
+            and is_absent = #{isAbsent}
+        </if>
+    </sql>
+
+
+    <insert id="insertAttendance">
+        insert into attendance (start_work_time, off_work_time, status, employee_id, is_late, is_absent) values (
+            #{startWorkTime},#{offWorkTime},#{status},#{employeeId},#{isLate},#{isAbsent}
+        );
+    </insert>
+
+
+    <update id="updateAttendance">
+        update attendance
+        <set>
+            <if test="startWorkTime!=null">
+                start_work_time = #{startWorkTime},
+            </if>
+            <if test="offWorkTime!=null">
+                off_work_time = #{offWorkTime} ,
+            </if>
+            <if test="status!=null">
+                status = #{status} ,
+            </if>
+            <if test="employeeId!=null">
+                employee_id = #{employeeId} ,
+            </if>
+            <if test="isLate!=null">
+                is_late = #{isLate} ,
+            </if>
+            <if test="isAbsent!=null">
+                is_absent = #{isAbsent} ,
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    <update id="recoverAttendance">
+        update attendance set is_delete = false where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <delete id="deleteList">
+        delete from attendance  where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete><!--
+    <update id="deleteList">
+        update attendance set is_delete = true where id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>-->
+    <delete id="cleanAttendance">
+        delete from attendance where is_delete=true
+    </delete>
+    <select id="findAttendanceByIdBase" resultMap="BaseResultMap">
+      select * from attendance where id = #{id} and is_delete = false;
+    </select>
+    <select id="showDelete" resultMap="BaseResultMap">
+        select * from attendance where is_delete = true ;
+    </select>
+    <select id="findAttendanceByCustom" resultMap="BaseResultMap">
+        select * from attendance
+        <where>
+            <include refid="CustomSelect"/>
+        </where>
+    </select>
+
+
+</mapper>
